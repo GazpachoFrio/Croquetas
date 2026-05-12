@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Recipe</title>
+</head>
+<body>
+<h1>Upload Recipe for Contest: <span th:text="${contest.name}">Contest Name</span></h1>
+
+<form method="post" th:action="@{/chef/{username}/contest/{contestId}/upload(username=${username},contestId=${contest.id})}" enctype="multipart/form-data">
+    <div>
+        <label>Recipe Title:</label><br/>
+        <input type="text" name="title" required/>
+    </div>
+    <div>
+        <label>Description:</label><br/>
+        <textarea name="description" rows="4" cols="50"></textarea>
+    </div>
+    <div>
+        <label>Photo of the dish:</label><br/>
+        <input type="file" name="photo" accept="image/*" required/>
+    </div>
+    <button type="submit">Upload Recipe</button>
+</form>
+
+<a href="/chef/dashboard">Cancel</a>
+</body>
+</html>

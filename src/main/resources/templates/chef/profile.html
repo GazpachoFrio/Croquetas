@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${chef.fullName} + ' - Chef Profile'">Perfil de Chef</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #4CAF50;
+        }
+        .profile-info h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .profile-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .section {
+            margin: 40px 0;
+        }
+        .section h2 {
+            color: #4CAF50;
+            border-left: 5px solid #4CAF50;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+        .upload-list {
+            background-color: #e9f5e9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .upload-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .upload-list li {
+            margin: 8px 0;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            background-color: #45a049;
+            text-decoration: none;
+        }
+        .recipe-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Status messages -->
+    <div th:if="${param.uploadSuccess}" class="success">
+        ✅ Su receta se ha guardado correctamente y ha sido asignado con un numero para el concurso.
+    </div>
+    <div th:if="${param.error}" class="error">
+        ❌ Ya estas participando.
+    </div>
+
+    <!-- Profile header -->
+    <div class="profile-header">
+        <img th:if="${chef.photoUrl}" th:src="${chef.photoUrl}" class="profile-photo" alt="Profile photo"/>
+        <img th:unless="${chef.photoUrl}" src="/images/default-avatar.png" class="profile-photo" alt="Default avatar"/>
+        <div class="profile-info">
+            <h1 th:text="${chef.fullName}">Chef Name</h1>
+            <p><strong>Username:</strong> <span th:text="${chef.username}">Nombre</span></p>
+            <p th:if="${chef.bio}" th:text="${'📝 '+ 'Bio: ' + chef.bio}">Bio </p>
+            <p><strong>Concursa desde:</strong> <span th:text="${chef.joinYear}">2024</span></p>
+        </div>
+    </div>
+
+    <!-- Owner-only section: upload for new contests -->
+    <div th:if="${isOwner}" class="section">
+        <h2>📤 Sube la receta para el concurso croquetil abierto</h2>
+        <div th:if="${not #lists.isEmpty(availableContests)}" class="upload-list">
+            <p>¡Participa en este concurso!</p>
+            <ul>
+                <li th:each="c : ${availableContests}">
+                    <a th:href="@{/chef/{username}/contest/{contestId}/upload(username=${chef.username}, contestId=${c.id})}">
+                        <strong th:text="${c.name}">Nombre de concurso</strong>
+                        ([[${c.startDate}]] to [[${c.endDate}]])
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div th:if="${#lists.isEmpty(availableContests)}">
+            <p>Ahora mismo no hay previsto ningún concurso. ¡Congela esas Croquetas!</p>
+        </div>
+		<div th:if="${isOwner and not #lists.isEmpty(pastContests)}" class="section">
+		    <h2>📜 Sube una receta para concursos pasados</h2>
+		    <div class="upload-list">
+		        <ul>
+		            <li th:each="c : ${pastContests}">
+		                <a th:href="@{/chef/{username}/contest/{contestId}/upload(username=${chef.username}, contestId=${c.id})}">
+		                    <strong th:text="${c.name}"></strong> ([[${c.startDate}]] – [[${c.endDate}]])
+		                </a>
+		            </li>
+		        </ul>
+		    </div>
+		</div>
+    </div>
+
+    <!-- Chef's recipes -->
+    <div class="section">
+        <h2>🍲 Las recetas de [[${chef.fullName}]]</h2>
+        <div th:if="${recipes.empty}">
+            <p>Estas un poco empanado, no has subido ninguna receta.</p>
+        </div>
+        <table th:unless="${recipes.empty}">
+            <thead>
+                <tr>
+                    <th>Titulo</th>
+                    <th>Mejor Croqueta</th>
+                    <th>Croqueta más Sexy</th>
+                    <th>La croqueta más cutre</th>
+                    <th>La más creativa</th>
+                    <th>Foto</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="r : ${recipes}">
+                    <td th:text="${r.title}">Title</td>
+                    <td th:text="${r.bestVotes}">0</td>
+                    <td th:text="${r.sexierVotes}">0</td>
+                    <td th:text="${r.worstVotes}">0</td>
+                    <td th:text="${r.creativityVotes}">0</td>
+                    <td>
+                        <img th:if="${r.photoUrl}" th:src="${r.photoUrl}" class="recipe-img" alt="Recipe photo"/>
+                        <span th:unless="${r.photoUrl}">No photo</span>
+                    </td>
+                    <td><a th:href="@{/recipe/{id}(id=${r.id})}">Ver Receta</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Contest participation -->
+    <div class="section">
+        <h2>🏆 Participaciones anteriores</h2>
+        <div th:if="${participations.empty}">
+            <p>Parece que tienes que subir tus recetas</p>
+        </div>
+        <table th:unless="${participations.empty}">
+            <thead>
+                <tr>
+                    <th>Concurso</th>
+                    <th>Año</th>
+                    <th>Premios #</th>
+                    <th>Receta</th>
+                    <th>Votos recibidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${participations}">
+                    <td th:text="${p.contest.name}">Año del Concurso</td>
+                    <td th:text="${p.contest.startDate.year}">2025</td>
+					<td>
+					    <span th:if="${isOwner or isAdmin}">
+					        #<span th:text="${p.assignedNumber}"></span>
+					    </span>
+					    <span th:unless="${isOwner or isAdmin}">
+					        🔒
+					    </span>
+					</td>
+                    <td><a th:href="@{/recipe/{id}(id=${p.recipe.id})}" th:text="${p.recipe.title}">Recipe</a></td>
+                    <td>
+                        Best: [[${p.recipe.bestVotes}]] |
+                        Sexier: [[${p.recipe.sexierVotes}]] |
+                        Worst: [[${p.recipe.worstVotes}]] |
+                        Creative: [[${p.recipe.creativityVotes}]]
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a href="/" class="back-link">← Menu principal</a>
+</div>
+</body>
+</html>

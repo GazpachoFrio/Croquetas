@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Biblioteca de Recetas</title>
+    <style>
+        body { font-family: Arial; margin: 40px; background: #f9f9f9; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .recipe-card { border: 1px solid #ddd; margin: 15px 0; padding: 15px; border-radius: 8px; display: flex; gap: 20px; align-items: center; }
+        .recipe-img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
+        .recipe-info { flex: 1; }
+        h1 { color: #4CAF50; }
+        a { text-decoration: none; color: #4CAF50; }
+        a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+	<form method="get" action="/recipes" style="margin-bottom: 20px;">
+	    <label>Ordenar por:</label>
+	    <select name="sort">
+	        <option value="">Título</option>
+	        <option value="chef" th:selected="${selectedSort == 'chef'}">Chef</option>
+	        <option value="contest" th:selected="${selectedSort == 'contest'}">Concurso</option>
+	    </select>
+	    
+	    <label style="margin-left: 20px;">Filtrar por Chef:</label>
+	    <select name="chefId">
+	        <option value="">Todos</option>
+	        <option th:each="chef : ${chefs}" th:value="${chef.id}" th:text="${chef.fullName}" th:selected="${chef.id == selectedChefId}"></option>
+	    </select>
+	    
+	    <label style="margin-left: 20px;">Filtrar por Concurso:</label>
+	    <select name="contestId">
+	        <option value="">Todos</option>
+	        <option th:each="c : ${contests}" th:value="${c.id}" th:text="${c.name}" th:selected="${c.id == selectedContestId}"></option>
+	    </select>
+	    
+	    <button type="submit" style="margin-left: 20px;">Aplicar</button>
+	</form>
+<div class="container">
+    <h1>📖 Biblioteca de Recetas</h1>
+    <div th:if="${recipes.empty}">
+        <p>No hay recetas publicadas todavía.</p>
+    </div>
+    <div th:each="r : ${recipes}" class="recipe-card">
+        <img th:if="${r.photoUrl}" th:src="${r.photoUrl}" class="recipe-img"/>
+        <img th:unless="${r.photoUrl}" src="/images/default-recipe.png" class="recipe-img"/>
+        <div class="recipe-info">
+            <h2><a th:href="@{/recipes/{id}(id=${r.id})}" th:text="${r.title}">Título</a></h2>
+            <p><strong>Chef:</strong> <a th:href="@{/chef/{username}(username=${r.chef.username})}" th:text="${r.chef.fullName}">Chef</a></p>
+            <p th:text="${#strings.abbreviate(r.description, 100)}">Descripción corta...</p>
+            <p>⭐ Mejor: [[${r.bestVotes}]] | 💃 Sexy: [[${r.sexierVotes}]] | 💩 Cutre: [[${r.worstVotes}]] | 🎨 Creativa: [[${r.creativityVotes}]]</p>
+        </div>
+    </div>
+    <a href="/" class="back-link">← Volver al inicio</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Panel</title>
+</head>
+<body>
+<h1>Admin Panel</h1>
+
+<h2>Pending User Approvals</h2>
+<div th:if="${pendingUsers.empty}">No pending users.</div>
+<table border="1" th:unless="${pendingUsers.empty}">
+    <thead>
+        <tr><th>Username</th><th>Full Name</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+        <tr th:each="u : ${pendingUsers}">
+            <td th:text="${u.username}">user</td>
+            <td th:text="${u.fullName}">name</td>
+            <td>
+                <form method="post" th:action="@{/admin/approve-user/{id}(id=${u.id})}">
+                    <button type="submit">Approve</button>
+                </form>
+            </td>
+			<td>
+				<form method="post" th:action="@{/admin/delete-user/{id}(id=${u.id})}" style="display:inline">
+				       <button type="submit" onclick="return confirm('Delete this user permanently?')">Delete</button>
+				   </form>
+			</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Create New Contest</h2>
+<form method="post" th:action="@{/admin/contests/create}">
+    <div>Name: <input type="text" name="name" required/></div>
+    <div>Start Date: <input type="date" name="startDate" required/></div>
+    <div>End Date: <input type="date" name="endDate" required/></div>
+    <button type="submit">Create Contest</button>
+</form>
+
+<h2>Existing Contests</h2>
+<table border="1">
+    <thead><tr><th>Name</th><th>Dates</th><th>Finished</th><th>Action</th></tr></thead>
+    <tbody>
+        <tr th:each="c : ${contests}">
+            <td th:text="${c.name}">Contest</td>
+            <td th:text="${c.startDate} + ' - ' + ${c.endDate}">dates</td>
+            <td th:text="${c.finished} ? 'Finished' : 'In Progress'">status</td>
+            <td>
+                <form th:if="!${c.finished}" method="post" th:action="@{/admin/contests/{id}/finish(id=${c.id})}">
+                    <button type="submit">Finish Contest</button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<a href="/">Back to Home</a>
+</body>
+</html>

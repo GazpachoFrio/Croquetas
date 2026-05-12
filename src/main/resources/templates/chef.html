@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chef Dashboard</title>
+</head>
+<body>
+<h1>Welcome, <span th:text="${chef.fullName}">Chef</span>!</h1>
+
+<div th:if="${param.success}" style="color: green;">
+    Recipe uploaded successfully! You have been assigned a contestant number.
+</div>
+<div th:if="${param.error}" style="color: red;">
+    Error: You have already uploaded a recipe for this contest.
+</div>
+
+<h2>Active Contests</h2>
+<div th:if="${contests.empty}">
+    <p>No active contests at the moment.</p>
+</div>
+<ul th:unless="${contests.empty}">
+    <li th:each="c, iterStat : ${contests}">
+        <strong th:text="${c.name}">Contest Name</strong>
+        ([[${c.startDate}]] - [[${c.endDate}]])
+        <span th:if="${registeredFlags[iterStat.index]}">
+            ✅ Already registered
+        </span>
+        <span th:unless="${registeredFlags[iterStat.index]}">
+            <a th:href="@{/chef/contest/{id}/upload(id=${c.id})}">Upload Recipe</a>
+        </span>
+    </li>
+</ul>
+
+<a href="/">Back to Home</a>
+</body>
+</html>
